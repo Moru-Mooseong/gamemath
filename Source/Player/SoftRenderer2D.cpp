@@ -1,27 +1,27 @@
-
+ï»¿
 #include "Precompiled.h"
 #include "SoftRenderer.h"
 #include <random>
 using namespace CK::DD;
 
-// °İÀÚ¸¦ ±×¸®´Â ÇÔ¼ö
+// ê²©ìë¥¼ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 void SoftRenderer::DrawGizmo2D()
 {
 	auto& r = GetRenderer();
 	const auto& g = Get2DGameEngine();
 
-	// ±×¸®µå »ö»ó
+	// ê·¸ë¦¬ë“œ ìƒ‰ìƒ
 	LinearColor gridColor(LinearColor(0.8f, 0.8f, 0.8f, 0.3f));
 
-	// ºäÀÇ ¿µ¿ª °è»ê
+	// ë·°ì˜ ì˜ì—­ ê³„ì‚°
 	Vector2 viewPos = g.GetMainCamera().GetTransform().GetPosition();
 	Vector2 extent = Vector2(_ScreenSize.X * 0.5f, _ScreenSize.Y * 0.5f);
 
-	// ÁÂÃø ÇÏ´Ü¿¡¼­ºÎÅÍ °İÀÚ ±×¸®±â
+	// ì¢Œì¸¡ í•˜ë‹¨ì—ì„œë¶€í„° ê²©ì ê·¸ë¦¬ê¸°
 	int xGridCount = _ScreenSize.X / _Grid2DUnit;
 	int yGridCount = _ScreenSize.Y / _Grid2DUnit;
 
-	// ±×¸®µå°¡ ½ÃÀÛµÇ´Â ÁÂÇÏ´Ü ÁÂÇ¥ °ª °è»ê
+	// ê·¸ë¦¬ë“œê°€ ì‹œì‘ë˜ëŠ” ì¢Œí•˜ë‹¨ ì¢Œí‘œ ê°’ ê³„ì‚°
 	Vector2 minPos = viewPos - extent;
 	Vector2 minGridPos = Vector2(ceilf(minPos.X / (float)_Grid2DUnit), ceilf(minPos.Y / (float)_Grid2DUnit)) * (float)_Grid2DUnit;
 	ScreenPoint gridBottomLeft = ScreenPoint::ToScreenCoordinate(_ScreenSize, minGridPos - viewPos);
@@ -41,51 +41,76 @@ void SoftRenderer::DrawGizmo2D()
 	r.DrawFullVerticalLine(worldOrigin.X, LinearColor::Green);
 }
 
-// °ÔÀÓ ¿ÀºêÁ§Æ® ¸ñ·Ï
+// ê²Œì„ ì˜¤ë¸Œì íŠ¸ ëª©ë¡
 
-
-// ÃÖÃÊ ¾À ·ÎµùÀ» ´ã´çÇÏ´Â ÇÔ¼ö
+// ìµœì´ˆ ì”¬ ë¡œë”©ì„ ë‹´ë‹¹í•˜ëŠ” í•¨ìˆ˜
 void SoftRenderer::LoadScene2D()
 {
-	// ÃÖÃÊ ¾À ·Îµù¿¡¼­ »ç¿ëÇÏ´Â ¸ğµâ ³» ÁÖ¿ä ·¹ÆÛ·±½º
+	// ìµœì´ˆ ì”¬ ë¡œë”©ì—ì„œ ì‚¬ìš©í•˜ëŠ” ëª¨ë“ˆ ë‚´ ì£¼ìš” ë ˆí¼ëŸ°ìŠ¤
 	auto& g = Get2DGameEngine();
 
 }
 
-// °ÔÀÓ ·ÎÁ÷°ú ·»´õ¸µ ·ÎÁ÷ÀÌ °øÀ¯ÇÏ´Â º¯¼ö
+// ê²Œì„ ë¡œì§ê³¼ ë Œë”ë§ ë¡œì§ì´ ê³µìœ í•˜ëŠ” ë³€ìˆ˜
+Vector2 currentPosition(100.f, 30.f);	//ë¬¼ì²´ì˜ ìœ„ì¹˜ë¥¼ ë³´ê´€í•˜ëŠ” ë³€ìˆ˜ (ì´ˆê¸°í™”ê°’ 100x, 100y)
 
 
-// °ÔÀÓ ·ÎÁ÷À» ´ã´çÇÏ´Â ÇÔ¼ö
+// ê²Œì„ ë¡œì§ì„ ë‹´ë‹¹í•˜ëŠ” í•¨ìˆ˜
 void SoftRenderer::Update2D(float InDeltaSeconds)
 {
-	// °ÔÀÓ ·ÎÁ÷¿¡¼­ »ç¿ëÇÏ´Â ¸ğµâ ³» ÁÖ¿ä ·¹ÆÛ·±½º
+	// ê²Œì„ ë¡œì§ì—ì„œ ì‚¬ìš©í•˜ëŠ” ëª¨ë“ˆ ë‚´ ì£¼ìš” ë ˆí¼ëŸ°ìŠ¤
 	auto& g = Get2DGameEngine();
 	const InputManager& input = g.GetInputManager();
 
-	// °ÔÀÓ ·ÎÁ÷ÀÇ ·ÎÄÃ º¯¼ö
+	// ê²Œì„ ë¡œì§ì˜ ë¡œì»¬ ë³€ìˆ˜
+	static float moveSpeed = 100.f;	//í”„ë ˆì„ë‹¹ ì´ë™ì†ë„ë¥¼ ì§€ì •
+	
+	Vector2 inputVector = Vector2(input.GetAxis(InputAxis::XAxis), (input.GetAxis(InputAxis::YAxis))); //Xì¶•ê³¼ Yì¶• ì…ë ¥ì„ ê²°í•©í•´ ì…ë ¥ë²¡í„°ë¥¼ ìƒì„±í•œë‹¤.
+	Vector2 deltaPosition = inputVector * moveSpeed * InDeltaSeconds;		//ì´ë™ì†ë„ì™€ í”„ë ˆì„ì˜ ê²½ê³¼ì‹œê°„ InDeltaTimeì„ ê³±í•˜ì—¬ í•´ë‹¹ í”„ë ˆì„ì—ì„œ ì´ë™í•  ê¸¸ì´ë¥¼ ê³„ì‚°í•œ í›„ ì´ë¥¼ ì…ë ¥ ë²¡í„°ì— ê³±í•˜ê³  ê·¸ ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.
+
+	currentPosition += deltaPosition;		//ë¬¼ì²´ì˜ ìµœì¢… ìƒíƒœë¥¼ ê²°ì •í•œë‹¤.
 
 }
 
-// ·»´õ¸µ ·ÎÁ÷À» ´ã´çÇÏ´Â ÇÔ¼ö
+// ë Œë”ë§ ë¡œì§ì„ ë‹´ë‹¹í•˜ëŠ” í•¨ìˆ˜
 void SoftRenderer::Render2D()
 {
-	// ·»´õ¸µ ·ÎÁ÷¿¡¼­ »ç¿ëÇÏ´Â ¸ğµâ ³» ÁÖ¿ä ·¹ÆÛ·±½º
+	// ë Œë”ë§ ë¡œì§ì—ì„œ ì‚¬ìš©í•˜ëŠ” ëª¨ë“ˆ ë‚´ ì£¼ìš” ë ˆí¼ëŸ°ìŠ¤
 	auto& r = GetRenderer();
 	const auto& g = Get2DGameEngine();
 
-	// ¹è°æ¿¡ °İÀÚ ±×¸®±â
+	// ë°°ê²½ì— ê²©ì ê·¸ë¦¬ê¸°
 	DrawGizmo2D();
 
-	// ·»´õ¸µ ·ÎÁ÷ÀÇ ·ÎÄÃ º¯¼ö
+	// ë Œë”ë§ ë¡œì§ì˜ ë¡œì»¬ ë³€ìˆ˜
+	
+	//ë°ì„ íšŒìƒ‰ì˜ ì„ ì„ ì‚¬ìš©í•´ í‰í–‰í•œ ë°±í„°ë¥¼ í‘œí˜„
+	static float lineLength = 500.f;										//13.ë²¡í„° currentPositionê³¼ í‰í–‰í•œ ë²¡í„°ë¥¼ í‘œí˜„í•˜ë„ë¡ ê¸¸ì´ë¥¼ ì¶©ë¶„íˆ í¬ê²Œ ì§€ì •í•œë‹¤.
+	Vector2 lineStart = currentPosition * lineLength;						//14. ë²¡í„° currentPositionê³¼ í‰íŒ½í•œ ì„ ì˜ ì‹œì‘ì ì„ ê³„ì‚°í•œë‹¤.
+	Vector2 lineEnd = currentPosition * -lineLength;						//14. ë²¡í„° currentPositionê³¼ í‰í–‰í•œ ì„ ì˜ ëì ì„ ê³„ì‚°í•œë‹¤.
+	r.DrawLine(lineStart, lineEnd, LinearColor::LightGray);					//15. ë Œë”ëŸ¬ì—ì„œ ì œê³µí•˜ëŠ” DrawLineí•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ ë°ì€ íšŒìƒ‰ìœ¼ë¡œ í‰í–‰í•œ ì„ ì„ í‘œí˜„í•œë‹¤.
 
+	//ë²¡í„°ë¥¼ íŒŒë€ìƒ‰ í”½ì…€ë¡œ í‘œí˜„
+	r.DrawPoint(currentPosition, LinearColor::Blue);						//16. íŒŒë€ ì ìœ¼ë¡œ ë²¡í„° CurrentPositionì„ í™”ë©´ì— ì°ëŠ”ë‹¤. ì ì´ ì˜ ë³´ì´ë„ë¡ 8ë°©í–¥ì— ëŒ€í•´ì„œë„ í”½ì…€ì„ ì°ëŠ”ë‹¤.
+	r.DrawPoint(currentPosition+Vector2::UnitX, LinearColor::Blue);
+	r.DrawPoint(currentPosition - Vector2::UnitY, LinearColor::Blue);
+	r.DrawPoint(currentPosition + Vector2::UnitY, LinearColor::Blue);
+	r.DrawPoint(currentPosition - Vector2::UnitY, LinearColor::Blue);
+	r.DrawPoint(currentPosition + Vector2::One, LinearColor::Blue);
+	r.DrawPoint(currentPosition - Vector2::One, LinearColor::Blue);
+	r.DrawPoint(currentPosition + Vector2(1.f, -1.f), LinearColor::Blue);
+	r.DrawPoint(currentPosition - Vector2(1.f, -1.f), LinearColor::Blue);
+
+	//ë²¡í„°ì˜ í˜„ì¬ ì¢Œí‘œë¥¼ ìš°ìƒë‹¨ì— ì¶œë ¥
+	r.PushStatisticText("Coordinate : " + currentPosition.ToString());		//17. ìš°ìƒë‹¨ì— ë²¡í„° currentPositionì˜ ì¢Œí‘œë¥¼ ì¶œë ¥í•œë‹¤.
 }
 
-// ¸Ş½Ã¸¦ ±×¸®´Â ÇÔ¼ö
+// ë©”ì‹œë¥¼ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 void SoftRenderer::DrawMesh2D(const class DD::Mesh& InMesh, const Matrix3x3& InMatrix, const LinearColor& InColor)
 {
 }
 
-// »ï°¢ÇüÀ» ±×¸®´Â ÇÔ¼ö
+// ì‚¼ê°í˜•ì„ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 void SoftRenderer::DrawTriangle2D(std::vector<DD::Vertex2D>& InVertices, const LinearColor& InColor, FillMode InFillMode)
 {
 }
